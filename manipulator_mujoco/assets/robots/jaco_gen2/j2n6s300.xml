@@ -76,6 +76,7 @@
                       <geom name="j2n6s300_link_6_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="hand_3finger.dae" class="collision" />
                       <geom name="j2n6s300_link_6_visual_0" pos="0 0 0" quat="1 0 0 0" material="carbon_fiber" type="mesh" mesh="hand_3finger.dae" class="visual" />
                       <geom name="j2n6s300_link_6_visual_1" pos="0 0 0" quat="1 0 0 0" material="default_material" type="mesh" mesh="ring_small.dae" class="visual" />
+                      <body name="j2n6s300_end_effector" pos="0 0 -0.1600" quat="4.329780281177467e-17 0.7071067811865476 0.7071067811865475 4.329780281177466e-17" />
                       <body name="j2n6s300_link_finger_1" pos="0.00279 0.03126 -0.11467" quat="0.24023796508978942 -0.6336659599902154 -0.3895360342483902 0.6237105492944888">
                         <joint name="j2n6s300_joint_finger_1" type="hinge" ref="0.0" class="motor" range="0 1.51" axis="0 0 1" />
                         <inertial pos="0.022 0 0" quat="1.0 0.0 0.0 0.0" mass="0.01" diaginertia="7.8999684e-07 7.8999684e-07 8e-08" />
