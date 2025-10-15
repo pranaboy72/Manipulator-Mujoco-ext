@@ -1,0 +1,166 @@
+<mujoco model="j2n6s300">
+  <default>
+    <default class="robot">
+      <default class="motor">
+        <joint />
+        <motor />
+      </default>
+      <default class="visual">
+        <geom material="visualgeom" contype="0" conaffinity="0" group="2" />
+      </default>
+      <default class="collision">
+        <geom material="collision_material" condim="3" contype="0" conaffinity="1" priority="1" group="1" solref="0.005 1" solimp="0.99 0.999 1e-05" friction="1 0.01 0.01" />
+      </default>
+    </default>
+  </default>
+
+  <compiler angle="radian" />
+
+  <asset>
+    <material name="carbon_fiber" rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+    <material name="default_material" rgba="0.7 0.7 0.7 1" />
+    <material name="collision_material" rgba="1.0 0.28 0.1 0.9" />
+    <mesh name="base.dae" file="package://kinova_description/meshes/base.dae" />
+    <mesh name="shoulder.dae" file="package://kinova_description/meshes/shoulder.dae" />
+    <mesh name="ring_big.dae" file="package://kinova_description/meshes/ring_big.dae" />
+    <mesh name="arm.dae" file="package://kinova_description/meshes/arm.dae" />
+    <mesh name="forearm.dae" file="package://kinova_description/meshes/forearm.dae" />
+    <mesh name="wrist.dae" file="package://kinova_description/meshes/wrist.dae" />
+    <mesh name="ring_small.dae" file="package://kinova_description/meshes/ring_small.dae" />
+    <mesh name="hand_3finger.dae" file="package://kinova_description/meshes/hand_3finger.dae" />
+    <mesh name="finger_proximal.dae" file="package://kinova_description/meshes/finger_proximal.dae" />
+    <mesh name="finger_distal.dae" file="package://kinova_description/meshes/finger_distal.dae" />
+  </asset>
+
+  <worldbody>
+    <body name="world" pos="0.00000000 0.00000000 0.13450000" quat="1 0 0 0" childclass="robot">
+      <freejoint name="floating_base" />
+      <body name="root" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+        <body name="j2n6s300_link_base" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+          <inertial pos="0 0 0.1255" quat="1.0 0.0 0.0 0.0" mass="0.46784" diaginertia="0.000951270861568 0.000951270861568 0.00037427200000000004" />
+          <geom name="j2n6s300_link_base_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="base.dae" class="collision" />
+          <geom name="j2n6s300_link_base_visual" pos="0 0 0" quat="1 0 0 0" material="carbon_fiber" type="mesh" mesh="base.dae" class="visual" />
+          <body name="j2n6s300_link_1" pos="0 0 0.15675" quat="6.123233995736766e-17 0.0 1.0 0.0">
+            <joint name="j2n6s300_joint_1" type="hinge" ref="0.0" class="motor" axis="0 0 1" />
+            <inertial pos="0 -0.002 -0.0605" quat="1.0 0.0 0.0 0.0" mass="0.7477" diaginertia="0.0015203172520400004 0.0015203172520400004 0.00059816" />
+            <geom name="j2n6s300_link_1_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="shoulder.dae" class="collision" />
+            <geom name="j2n6s300_link_1_visual_0" pos="0 0 0" quat="1 0 0 0" material="carbon_fiber" type="mesh" mesh="shoulder.dae" class="visual" />
+            <geom name="j2n6s300_link_1_visual_1" pos="0 0 0" quat="1 0 0 0" material="default_material" type="mesh" mesh="ring_big.dae" class="visual" />
+            <body name="j2n6s300_link_2" pos="0 0.0016 -0.11875" quat="4.329780281177467e-17 -4.329780281177466e-17 -0.7071067811865475 0.7071067811865476">
+              <joint name="j2n6s300_joint_2" type="hinge" ref="0.0" class="motor" range="0.8203047484373349 5.462880558742252" axis="0 0 1" />
+              <inertial pos="0 -0.2065 -0.01" quat="1.0 0.0 0.0 0.0" mass="0.99" diaginertia="0.010502207990999999 0.0007920000000000001 0.010502207990999999" />
+              <geom name="j2n6s300_link_2_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="arm.dae" class="collision" />
+              <geom name="j2n6s300_link_2_visual_0" pos="0 0 0" quat="1 0 0 0" material="carbon_fiber" type="mesh" mesh="arm.dae" class="visual" />
+              <geom name="j2n6s300_link_2_visual_1" pos="0 0 0" quat="1 0 0 0" material="default_material" type="mesh" mesh="ring_big.dae" class="visual" />
+              <body name="j2n6s300_link_3" pos="0 -0.410 0" quat="6.123233995736766e-17 0.0 1.0 0.0">
+                <joint name="j2n6s300_joint_3" type="hinge" ref="0.0" class="motor" range="0.33161255787892263 5.951572749300664" axis="0 0 1" />
+                <inertial pos="0 0.081 -0.0086" quat="1.0 0.0 0.0 0.0" mass="0.6763" diaginertia="0.0014202243190800001 0.000304335 0.0014202243190800001" />
+                <geom name="j2n6s300_link_3_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="forearm.dae" class="collision" />
+                <geom name="j2n6s300_link_3_visual_0" pos="0 0 0" quat="1 0 0 0" material="carbon_fiber" type="mesh" mesh="forearm.dae" class="visual" />
+                <geom name="j2n6s300_link_3_visual_1" pos="0 0 0" quat="1 0 0 0" material="default_material" type="mesh" mesh="ring_big.dae" class="visual" />
+                <body name="j2n6s300_link_4" pos="0 0.2073 -0.0114" quat="4.329780281177467e-17 -4.329780281177466e-17 -0.7071067811865475 0.7071067811865476">
+                  <joint name="j2n6s300_joint_4" type="hinge" ref="0.0" class="motor" axis="0 0 1" />
+                  <inertial pos="0 -0.037 -0.0642" quat="1.0 0.0 0.0 0.0" mass="0.426367" diaginertia="7.734969059999999e-05 7.734969059999999e-05 0.0001428" />
+                  <geom name="j2n6s300_link_4_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="wrist.dae" class="collision" />
+                  <geom name="j2n6s300_link_4_visual_0" pos="0 0 0" quat="1 0 0 0" material="carbon_fiber" type="mesh" mesh="wrist.dae" class="visual" />
+                  <geom name="j2n6s300_link_4_visual_1" pos="0 0 0" quat="1 0 0 0" material="default_material" type="mesh" mesh="ring_small.dae" class="visual" />
+                  <body name="j2n6s300_link_5" pos="0 -0.03703 -0.06414" quat="5.3028761936245346e-17 3.0616169978683824e-17 0.49999999999999994 0.8660254037844387">
+                    <joint name="j2n6s300_joint_5" type="hinge" ref="0.0" class="motor" axis="0 0 1" />
+                    <inertial pos="0 -0.037 -0.0642" quat="1.0 0.0 0.0 0.0" mass="0.426367" diaginertia="7.734969059999999e-05 7.734969059999999e-05 0.0001428" />
+                    <geom name="j2n6s300_link_5_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="wrist.dae" class="collision" />
+                    <geom name="j2n6s300_link_5_visual_0" pos="0 0 0" quat="1 0 0 0" material="carbon_fiber" type="mesh" mesh="wrist.dae" class="visual" />
+                    <geom name="j2n6s300_link_5_visual_1" pos="0 0 0" quat="1 0 0 0" material="default_material" type="mesh" mesh="ring_small.dae" class="visual" />
+                    <body name="j2n6s300_link_6" pos="0 -0.03703 -0.06414" quat="5.3028761936245346e-17 3.0616169978683824e-17 0.49999999999999994 0.8660254037844387">
+                      <joint name="j2n6s300_joint_6" type="hinge" ref="0.0" class="motor" axis="0 0 1" />
+                      <inertial pos="0 0 -0.06" quat="1.0 0.0 0.0 0.0" mass="0.99" diaginertia="0.00034532361869999995 0.00034532361869999995 0.0005815999999999999" />
+                      <geom name="j2n6s300_link_6_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="hand_3finger.dae" class="collision" />
+                      <geom name="j2n6s300_link_6_visual_0" pos="0 0 0" quat="1 0 0 0" material="carbon_fiber" type="mesh" mesh="hand_3finger.dae" class="visual" />
+                      <geom name="j2n6s300_link_6_visual_1" pos="0 0 0" quat="1 0 0 0" material="default_material" type="mesh" mesh="ring_small.dae" class="visual" />
+                      <body name="j2n6s300_link_finger_1" pos="0.00279 0.03126 -0.11467" quat="0.24023796508978942 -0.6336659599902154 -0.3895360342483902 0.6237105492944888">
+                        <joint name="j2n6s300_joint_finger_1" type="hinge" ref="0.0" class="motor" range="0 1.51" axis="0 0 1" />
+                        <inertial pos="0.022 0 0" quat="1.0 0.0 0.0 0.0" mass="0.01" diaginertia="7.8999684e-07 7.8999684e-07 8e-08" />
+                        <geom name="j2n6s300_link_finger_1_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="finger_proximal.dae" class="collision" />
+                        <geom name="j2n6s300_link_finger_1_visual" pos="0 0 0" quat="1 0 0 0" material="carbon_fiber" type="mesh" mesh="finger_proximal.dae" class="visual" />
+                        <body name="j2n6s300_link_finger_tip_1" pos="0.044 -0.003 0" quat="1.0 0.0 0.0 0.0">
+                          <joint name="j2n6s300_joint_finger_tip_1" type="hinge" ref="0.0" class="motor" range="0 2" axis="0 0 1" />
+                          <inertial pos="0.022 0 0" quat="1.0 0.0 0.0 0.0" mass="0.01" diaginertia="7.8999684e-07 7.8999684e-07 8e-08" />
+                          <geom name="j2n6s300_link_finger_tip_1_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="finger_distal.dae" class="collision" />
+                          <geom name="j2n6s300_link_finger_tip_1_visual" pos="0 0 0" quat="1 0 0 0" material="carbon_fiber" type="mesh" mesh="finger_distal.dae" class="visual" />
+                        </body>
+                      </body>
+                      <body name="j2n6s300_link_finger_2" pos="0.02226 -0.02707 -0.11482" quat="0.6596533324823282 -0.3714595607374612 0.6016791460724046 -0.2546713192789357">
+                        <joint name="j2n6s300_joint_finger_2" type="hinge" ref="0.0" class="motor" range="0 1.51" axis="0 0 1" />
+                        <inertial pos="0.022 0 0" quat="1.0 0.0 0.0 0.0" mass="0.01" diaginertia="7.8999684e-07 7.8999684e-07 8e-08" />
+                        <geom name="j2n6s300_link_finger_2_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="finger_proximal.dae" class="collision" />
+                        <geom name="j2n6s300_link_finger_2_visual" pos="0 0 0" quat="1 0 0 0" material="carbon_fiber" type="mesh" mesh="finger_proximal.dae" class="visual" />
+                        <body name="j2n6s300_link_finger_tip_2" pos="0.044 -0.003 0" quat="1.0 0.0 0.0 0.0">
+                          <joint name="j2n6s300_joint_finger_tip_2" type="hinge" ref="0.0" class="motor" range="0 2" axis="0 0 1" />
+                          <inertial pos="0.022 0 0" quat="1.0 0.0 0.0 0.0" mass="0.01" diaginertia="7.8999684e-07 7.8999684e-07 8e-08" />
+                          <geom name="j2n6s300_link_finger_tip_2_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="finger_distal.dae" class="collision" />
+                          <geom name="j2n6s300_link_finger_tip_2_visual" pos="0 0 0" quat="1 0 0 0" material="carbon_fiber" type="mesh" mesh="finger_distal.dae" class="visual" />
+                        </body>
+                      </body>
+                      <body name="j2n6s300_link_finger_3" pos="-0.02226 -0.02707 -0.11482" quat="0.601679145943983 -0.25467131926704506 0.6596533326107497 -0.3714595607255705">
+                        <joint name="j2n6s300_joint_finger_3" type="hinge" ref="0.0" class="motor" range="0 1.51" axis="0 0 1" />
+                        <inertial pos="0.022 0 0" quat="1.0 0.0 0.0 0.0" mass="0.01" diaginertia="7.8999684e-07 7.8999684e-07 8e-08" />
+                        <geom name="j2n6s300_link_finger_3_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="finger_proximal.dae" class="collision" />
+                        <geom name="j2n6s300_link_finger_3_visual" pos="0 0 0" quat="1 0 0 0" material="carbon_fiber" type="mesh" mesh="finger_proximal.dae" class="visual" />
+                        <body name="j2n6s300_link_finger_tip_3" pos="0.044 -0.003 0" quat="1.0 0.0 0.0 0.0">
+                          <joint name="j2n6s300_joint_finger_tip_3" type="hinge" ref="0.0" class="motor" range="0 2" axis="0 0 1" />
+                          <inertial pos="0.022 0 0" quat="1.0 0.0 0.0 0.0" mass="0.01" diaginertia="7.8999684e-07 7.8999684e-07 8e-08" />
+                          <geom name="j2n6s300_link_finger_tip_3_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="finger_distal.dae" class="collision" />
+                          <geom name="j2n6s300_link_finger_tip_3_visual" pos="0 0 0" quat="1 0 0 0" material="carbon_fiber" type="mesh" mesh="finger_distal.dae" class="visual" />
+                        </body>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <site name="world_site" pos="0 0 0" quat="1 0 0 0" />
+      <camera name="front_camera" mode="track" fovy="90.0" quat="4.329780281177467e-17 4.329780281177466e-17 0.7071067811865475 0.7071067811865476" pos="0.0 2.0 0.5" />
+      <camera name="side_camera" mode="track" fovy="90.0" quat="-0.5 -0.4999999999999999 0.5 0.5000000000000001" pos="-2.0 0.0 0.5" />
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor name="j2n6s300_joint_1_ctrl" joint="j2n6s300_joint_1" class="motor" />
+    <motor name="j2n6s300_joint_2_ctrl" joint="j2n6s300_joint_2" class="motor" />
+    <motor name="j2n6s300_joint_3_ctrl" joint="j2n6s300_joint_3" class="motor" />
+    <motor name="j2n6s300_joint_4_ctrl" joint="j2n6s300_joint_4" class="motor" />
+    <motor name="j2n6s300_joint_5_ctrl" joint="j2n6s300_joint_5" class="motor" />
+    <motor name="j2n6s300_joint_6_ctrl" joint="j2n6s300_joint_6" class="motor" />
+    <motor name="j2n6s300_joint_finger_1_ctrl" joint="j2n6s300_joint_finger_1" class="motor" />
+    <motor name="j2n6s300_joint_finger_tip_1_ctrl" joint="j2n6s300_joint_finger_tip_1" class="motor" />
+    <motor name="j2n6s300_joint_finger_2_ctrl" joint="j2n6s300_joint_finger_2" class="motor" />
+    <motor name="j2n6s300_joint_finger_tip_2_ctrl" joint="j2n6s300_joint_finger_tip_2" class="motor" />
+    <motor name="j2n6s300_joint_finger_3_ctrl" joint="j2n6s300_joint_finger_3" class="motor" />
+    <motor name="j2n6s300_joint_finger_tip_3_ctrl" joint="j2n6s300_joint_finger_tip_3" class="motor" />
+  </actuator>
+
+  <contact>
+    <exclude body1="j2n6s300_link_base" body2="j2n6s300_link_1" />
+    <exclude body1="j2n6s300_link_1" body2="j2n6s300_link_2" />
+    <exclude body1="j2n6s300_link_2" body2="j2n6s300_link_3" />
+    <exclude body1="j2n6s300_link_3" body2="j2n6s300_link_4" />
+    <exclude body1="j2n6s300_link_4" body2="j2n6s300_link_5" />
+    <exclude body1="j2n6s300_link_5" body2="j2n6s300_link_6" />
+    <exclude body1="j2n6s300_link_6" body2="j2n6s300_link_finger_1" />
+    <exclude body1="j2n6s300_link_finger_1" body2="j2n6s300_link_finger_tip_1" />
+    <exclude body1="j2n6s300_link_6" body2="j2n6s300_link_finger_2" />
+    <exclude body1="j2n6s300_link_finger_2" body2="j2n6s300_link_finger_tip_2" />
+    <exclude body1="j2n6s300_link_6" body2="j2n6s300_link_finger_3" />
+    <exclude body1="j2n6s300_link_finger_3" body2="j2n6s300_link_finger_tip_3" />
+  </contact>
+
+  <sensor>
+    <framepos name="world_site_pos" objtype="site" objname="world_site" />
+    <framequat name="world_site_quat" objtype="site" objname="world_site" />
+    <framelinvel name="world_site_linvel" objtype="site" objname="world_site" />
+    <frameangvel name="world_site_angvel" objtype="site" objname="world_site" />
+    <velocimeter name="world_site_vel" site="world_site" />
+  </sensor>
+</mujoco>
