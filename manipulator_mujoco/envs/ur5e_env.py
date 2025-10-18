@@ -6,9 +6,10 @@ import mujoco.viewer
 import gymnasium as gym
 from gymnasium import spaces
 from manipulator_mujoco.arenas import StandardArena
-from manipulator_mujoco.robots import Arm
+from manipulator_mujoco.robots import Arm, Robotiq2F85
 from manipulator_mujoco.mocaps import Target
 from manipulator_mujoco.controllers import OperationalSpaceController
+from manipulator_mujoco.props import Primitive
 
 class UR5eEnv(gym.Env):
 
@@ -17,7 +18,7 @@ class UR5eEnv(gym.Env):
         "render_fps": None,
     }  # TODO add functionality to render_fps
 
-    def __init__(self, render_mode=None):
+    def __init__(self, gripper=False, cube=False, render_mode=None):
         # TODO come up with an observation space that makes sense
         self.observation_space = spaces.Box(
             low=-np.inf, high=np.inf, shape=(6,), dtype=np.float64
@@ -51,10 +52,34 @@ class UR5eEnv(gym.Env):
             attachment_site_name='attachment_site'
         )
 
+        # robotiq 2f-85 gripper
+        if gripper:
+            self._gripper = Robotiq2F85()
+
+            # attach gripper to arm
+            self._arm.attach_tool(self._gripper.mjcf_model, pos=[0, 0, 0], quat=[1, 0, 0, 0])
+
         # attach arm to arena
         self._arena.attach(
             self._arm.mjcf_model, pos=[0,0,0], quat=[0.7071068, 0, 0, -0.7071068]
         )
+        
+        # optional cube for pick-and-place tasks
+        if cube:
+            self._cube = Primitive(
+                type='box',
+                size=[0.02, 0.02, 0.02],  # 4cm cube (half-sizes)
+                rgba=[1, 0, 0, 1],  # Red color
+                mass=0.1,  # 100g
+                friction=[1.0, 0.005, 0.0001],  # High friction for grasping
+                name='cube'
+            )
+            
+            # Attach cube to arena with a free joint (so it can move)
+            self._cube_frame = self._arena.attach_free(
+                self._cube.mjcf_model,
+                pos=[0.5, 0, 0.02]  # Start on table surface
+            )
        
         # generate model
         self._physics = mjcf.Physics.from_mjcf_model(self._arena.mjcf_model)
