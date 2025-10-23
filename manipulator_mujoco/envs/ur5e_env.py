@@ -6,10 +6,35 @@ import mujoco.viewer
 import gymnasium as gym
 from gymnasium import spaces
 from manipulator_mujoco.arenas import StandardArena
-from manipulator_mujoco.robots import Arm, Robotiq2F85
+from manipulator_mujoco.robots import Arm, Robotiq2F85, AG95
 from manipulator_mujoco.mocaps import Target
 from manipulator_mujoco.controllers import OperationalSpaceController
 from manipulator_mujoco.props import Primitive
+from manipulator_mujoco.utils.transform_utils import mat2quat
+
+
+def _as_vec3(v):
+    return tuple(v) if v is not None else (0.0, 0.0, 0.0)
+
+def _as_quat(v):
+    return tuple(v) if v is not None else (1.0, 0.0, 0.0, 0.0)
+
+def _pose_to_freejoint_qpos(pos, quat_xyzw):
+    # freejoint expects [x y z qw qx qy qz]; we have [qx qy qz qw]
+    qx, qy, qz, qw = quat_xyzw
+    x, y, z = pos
+    return np.array([x, y, z, qw, qx, qy, qz], dtype=np.float64)
+
+def _add_axes_geoms_on_body(body, prefix, length=0.08, radius=0.002):
+    body.add('geom', name=f'{prefix}_dot', type='sphere', size=f'{radius*5:.3f}',
+             rgba='1 1 1 1', contype='0', conaffinity='0', group='0')
+    body.add('geom', name=f'{prefix}_x', type='capsule', fromto=f'0 0 0 {length} 0 0',
+             size=f'{radius}', rgba='1 0 0 1', contype='0', conaffinity='0', group='0')
+    body.add('geom', name=f'{prefix}_y', type='capsule', fromto=f'0 0 0 0 {length} 0',
+             size=f'{radius}', rgba='0 1 0 1', contype='0', conaffinity='0', group='0')
+    body.add('geom', name=f'{prefix}_z', type='capsule', fromto=f'0 0 0 0 0 {length}',
+             size=f'{radius}', rgba='0 0 1 1', contype='0', conaffinity='0', group='0')
+
 
 class UR5eEnv(gym.Env):
 
@@ -55,10 +80,18 @@ class UR5eEnv(gym.Env):
         # robotiq 2f-85 gripper
         if gripper:
             self._gripper = Robotiq2F85()
-
-            # attach gripper to arm
             self._arm.attach_tool(self._gripper.mjcf_model, pos=[0, 0, 0], quat=[1, 0, 0, 0])
-
+            
+            # Adjust the EEF frame to be at the pinch site
+            # pinch_site = self._gripper.mjcf_model.find("site", "pinch")
+            # if pinch_site is not None:
+            #     pinch_site.pos = [0, 0, 0.1]
+            
+            act = self._gripper.mjcf_model.find("actuator", "fingers_actuator")
+            
+            if act is not None:
+                act.set_attributes(forcerange="-160 160")
+                
         # attach arm to arena
         self._arena.attach(
             self._arm.mjcf_model, pos=[0,0,0], quat=[0.7071068, 0, 0, -0.7071068]
@@ -71,15 +104,30 @@ class UR5eEnv(gym.Env):
                 size=[0.02, 0.02, 0.02],  # 4cm cube (half-sizes)
                 rgba=[1, 0, 0, 1],  # Red color
                 mass=0.1,  # 100g
-                friction=[1.0, 0.005, 0.0001],  # High friction for grasping
-                name='cube'
+                name='cube',
+                friction=[1, 0.3, 0.0001]
             )
             
             # Attach cube to arena with a free joint (so it can move)
             self._cube_frame = self._arena.attach_free(
                 self._cube.mjcf_model,
-                pos=[0.5, 0, 0.02]  # Start on table surface
+                pos=[0.5, 0.134, 0.02]  # Start on table surface
             )
+            
+            self._arena.mjcf_model.option.cone = 'elliptic'
+            
+            if hasattr(self, '_gripper'):
+                pad_geoms = self._gripper.mjcf_model.find_all('geom')
+                for geom in pad_geoms:
+                    if geom.name and 'pad' in geom.name and ('pad1' in geom.name or 'pad2' in geom.name):
+                        geom.friction = [1.8, 0.8, 0.1] # High torsional friction
+
+            for geom in self._cube.mjcf_model.find_all('geom'):
+                geom.friction = [1.2, 0.5, 0.05]
+                
+        self._choose_eef_site(prefer_gripper_tcp=gripper, tcp_site_name='pinch', create_if_missing=False)
+        
+        self._visualize_frame()
        
         # generate model
         self._physics = mjcf.Physics.from_mjcf_model(self._arena.mjcf_model)
@@ -88,7 +136,8 @@ class UR5eEnv(gym.Env):
         self._controller = OperationalSpaceController(
             physics=self._physics,
             joints=self._arm.joints,
-            eef_site=self._arm.eef_site,
+            # eef_site=self._arm.eef_site,
+            eef_site=self.eef_site,
             min_effort=-150.0,
             max_effort=150.0,
             kp=200,
@@ -156,6 +205,66 @@ class UR5eEnv(gym.Env):
         info = self._get_info()
 
         return observation, reward, terminated, False, info
+    
+    @property
+    def eef_site(self):
+        return getattr(self, "_eef_site", self._arm.eef_site)
+    
+    def _choose_eef_site(self,
+                         prefer_gripper_tcp: bool = True,
+                         tcp_site_name:str='pinch',
+                         create_if_missing: bool = False,
+                         tcp_local_pos=(0., 0., 0.145),
+                         tcp_local_quat=(1., 0., 0., 0.)):
+        
+        site = self._arm.eef_site
+        
+        if prefer_gripper_tcp and hasattr(self, '_gripper'):
+            s = self._gripper.mjcf_model.find('site', tcp_site_name)
+            if s is None and create_if_missing:
+                g_base = self._gripper.mjcf_model.find('body', 'base')
+                if g_base is not None:
+                    s = g_base.add(
+                        "site",
+                        name=tcp_site_name,
+                        pos=f"{tcp_local_pos[0]} {tcp_local_pos[1]} {tcp_local_pos[2]}",
+                        quat=f"{tcp_local_quat[0]} {tcp_local_quat[1]} {tcp_local_quat[2]} {tcp_local_quat[3]}",
+                        size="0.008",
+                        rgba="0.8 0.2 1 1",
+                    )
+            if s is not None:
+                site = s
+        
+        self._eef_site = site
+        return site
+    
+    def _sync_target_to_eef(self):
+        if self._eef_site is None:
+            return
+        pos = self._physics.bind(self._eef_site).xpos.copy()
+        R = self._physics.bind(self._eef_site).xmat.reshape(3,3).copy()
+        quat = mat2quat(R)
+        self._target.set_mocap_pose(self._physics, position=pos, quaternion=quat)
+        
+    def _sync_dbg_goal_axes(self):
+        if not hasattr(self, "_dbg_goal_body"):
+            return
+        x, y, z = self.goal[:3]
+        qx, qy, qz, qw = self.goal[3:]
+        qpos = _pose_to_freejoint_qpos((x, y, z), (qx, qy, qz, qw))
+        self._physics.bind(self._dbg_goal_body.freejoint).qpos = qpos
+
+    def _sync_dbg_cube_axes(self):
+        if not hasattr(self, "_dbg_cube_body"):
+            return
+        # read cube pose from the frame body
+        cube_pos = self._physics.bind(self._cube_frame).xpos.copy()
+        cube_R   = self._physics.bind(self._cube_frame).xmat.reshape(3,3).copy()
+        from manipulator_mujoco.utils.transform_utils import mat2quat
+        qx, qy, qz, qw = mat2quat(cube_R)  # xyzw
+        qpos = _pose_to_freejoint_qpos(cube_pos, (qx, qy, qz, qw))
+        self._physics.bind(self._dbg_cube_body.freejoint).qpos = qpos
+
 
     def render(self) -> np.ndarray:
         """
@@ -194,6 +303,46 @@ class UR5eEnv(gym.Env):
 
         else:  # rgb_array
             return self._physics.render()
+        
+        
+    def _visualize_frame(self):
+        # ----- EEF axes (at the chosen site) -----
+        s = getattr(self, "_eef_site", None)
+        if s is not None:
+            owner_body = s.parent
+            pos = _as_vec3(getattr(s, "pos", None))
+            quat = _as_quat(getattr(s, "quat", None))
+            dbg = owner_body.add("body", name="dbg_eef_axes",
+                                pos=f"{pos[0]} {pos[1]} {pos[2]}",
+                                quat=f"{quat[0]} {quat[1]} {quat[2]} {quat[3]}")
+            _add_axes_geoms_on_body(dbg, "eef", length=0.08, radius=0.002)
+
+        # ----- TCP (pinch) marker -----
+        if hasattr(self, "_gripper"):
+            pinch_site = self._gripper.mjcf_model.find("site", "pinch")
+            g_base = self._gripper.mjcf_model.find("body", "base")
+            if pinch_site is not None and g_base is not None:
+                dbg_tcp = g_base.add("body", name="dbg_tcp",
+                                    pos="{} {} {}".format(*_as_vec3(pinch_site.pos)),
+                                    quat="1 0 0 0")
+                dbg_tcp.add("geom", type="sphere", size="0.012",
+                            rgba="1 1 0 1", contype="0", conaffinity="0", group="0")
+
+        # ----- Goal axes (free body synced to goal) -----
+        if not hasattr(self, "_dbg_goal_body"):
+            root = self._arena.mjcf_model.worldbody
+            self._dbg_goal_body = root.add("body", name="dbg_goal_body")
+            self._dbg_goal_body.add("freejoint", name="dbg_goal_free")
+            _add_axes_geoms_on_body(self._dbg_goal_body, "goal", length=0.08, radius=0.002)
+
+        # # ----- Cube axes (free body synced to cube) -----
+        # if hasattr(self, "_cube_frame") and not hasattr(self, "_dbg_cube_body"):
+        #     root = self._arena.mjcf_model.worldbody
+        #     self._dbg_cube_body = root.add("body", name="dbg_cube_body")
+        #     self._dbg_cube_body.add("freejoint", name="dbg_cube_free")
+        #     _add_axes_geoms_on_body(self._dbg_cube_body, "cube", length=0.06, radius=0.002)
+
+
 
     def close(self) -> None:
         """
